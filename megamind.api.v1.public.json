@@ -1,0 +1,941 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Megamind API",
+    "version": "1.0",
+    "contact": {
+      "email": "mm@megamind.network"
+    },
+    "description": "Megamind API для взаимодействия с Megamind Platform"
+  },
+  "servers": [
+    {
+      "url": "https://megamind.network/api/v1"
+    }
+  ],
+  "paths": {
+    "/auth": {
+      "get": {
+        "summary": "Получение api_key",
+        "operationId": "get-auth",
+        "description": "Вызов служит для авторизации на платформе Megamind и получения токена авторизации api_key для всех последующих вызовов",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "",
+                  "type": "object",
+                  "properties": {
+                    "api_key": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "api_key пользователя"
+                    }
+                  }
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "token": "asdgfdgertgfbnfrgetrweterwerewrghfdnjsdvdzx"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/response_auth_error"
+          }
+        },
+        "tags": [
+          "General"
+        ],
+        "security": [
+          {
+            "Basic HTTP Auth": []
+          }
+        ]
+      }
+    },
+    "/node/remove/{hwid}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/hwid"
+        }
+      ],
+      "delete": {
+        "summary": "Удаление исполнителя",
+        "operationId": "delete-node-remove-hwid",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/response_ok"
+          },
+          "401": {
+            "$ref": "#/components/responses/response_auth_error"
+          }
+        },
+        "description": "Полностью удаляет исполнителя из системы Megamind и снимает все задачи, связанные с ним.",
+        "tags": [
+          "Nodes"
+        ],
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
+    },
+    "/ping": {
+      "get": {
+        "summary": "Пинг",
+        "tags": [
+          "General"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/response_ok"
+          }
+        },
+        "operationId": "get-ping",
+        "description": "Проверка доступности сервера API",
+        "security": []
+      }
+    },
+    "/node/get/{hwid}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/hwid"
+        }
+      ],
+      "get": {
+        "summary": "Получение информации об исполнителе",
+        "tags": [
+          "Nodes"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user_node_description"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/response_auth_error"
+          }
+        },
+        "operationId": "get-node-get-hwid",
+        "description": "Получение технических характеристик исполнителя",
+        "parameters": [],
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
+    },
+    "/node/list": {
+      "get": {
+        "summary": "Получение списка исполнителей",
+        "tags": [
+          "Nodes"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/owner_node_description"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/response_auth_error"
+          }
+        },
+        "operationId": "get-node-list",
+        "description": "Получение списка исполнителей для владельца. Возможно только с api_key владельца оборудования.",
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
+    },
+    "/node/telemetry/{hwid}": {
+      "get": {
+        "summary": "Получение информации о загрузке оборудования",
+        "tags": [
+          "Nodes"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {},
+                "examples": {
+                  "example-cpu": {
+                    "value": ",result,table,_start,_stop,_field,_value,_time\n,_result,0,2021-02-15T10:37:11.655069961Z,2021-02-15T10:46:11.655069961Z,usage_system,1.3921200819550459,2021-02-15T10:38:00Z\n,_result,0,2021-02-15T10:37:11.655069961Z,2021-02-15T10:46:11.655069961Z,usage_system,1.4099406521792697,2021-02-15T10:46:00Z\n,_result,1,2021-02-15T10:37:11.655069961Z,2021-02-15T10:46:11.655069961Z,usage_user,0.9763815588311731,2021-02-15T10:38:00Z\n,_result,1,2021-02-15T10:37:11.655069961Z,2021-02-15T10:46:11.655069961Z,usage_user,1.094791276559522,2021-02-15T10:39:00Z"
+                  },
+                  "example-gpu": {
+                    "value": ",result,table,_start,_stop,_field,index,_value,_time\n,,0,2021-02-19T11:16:17.596820102Z,2021-02-19T11:21:17.596820102Z,utilization_gpu,0,100,2021-02-19T11:16:30Z\n,,0,2021-02-19T11:16:17.596820102Z,2021-02-19T11:21:17.596820102Z,utilization_gpu,1,100,2021-02-19T11:16:50Z\n,,0,2021-02-19T11:16:17.596820102Z,2021-02-19T11:21:17.596820102Z,utilization_gpu,2,100,2021-02-19T11:17:10Z\n,,0,2021-02-19T11:16:17.596820102Z,2021-02-19T11:21:17.596820102Z,utilization_gpu,3,100,2021-02-19T11:17:30Z\n,,0,2021-02-19T11:16:17.596820102Z,2021-02-19T11:21:17.596820102Z,utilization_gpu,4,100,2021-02-19T11:17:50Z\n,,0,2021-02-19T11:16:17.596820102Z,2021-02-19T11:21:17.596820102Z,utilization_gpu,5,100,2021-02-19T11:18:10Z"
+                  },
+                  "example-mem": {
+                    "value": ",result,table,_start,_stop,_field,_value,_time\n,,0,2021-02-19T11:49:22.321501336Z,2021-02-19T11:54:22.321501336Z,used_percent,4.664005064890251,2021-02-19T11:49:50Z\n,,0,2021-02-19T11:49:22.321501336Z,2021-02-19T11:54:22.321501336Z,used_percent,4.663517681301821,2021-02-19T11:50:10Z\n,,0,2021-02-19T11:49:22.321501336Z,2021-02-19T11:54:22.321501336Z,used_percent,4.663042482303102,2021-02-19T11:50:30Z\n,,0,2021-02-19T11:49:22.321501336Z,2021-02-19T11:54:22.321501336Z,used_percent,4.663761373096036,2021-02-19T11:50:50Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-node-telemetry",
+        "description": "Возвращает данные по загрузке CPU, GPU, memory и т.д. для выбранного исполнителя и временного диапазона в формате csv. Доступно только с ключом владельца исполнителя.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/telemetry_request"
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "timestamp_from": "2017-07-21T17:32:28Z",
+                    "timestamp_to": "2017-07-21T17:32:28Z",
+                    "data_source": "cpu"
+                  }
+                }
+              }
+            }
+          },
+          "description": ""
+        },
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/hwid"
+        }
+      ]
+    },
+    "/user/nodes/list": {
+      "get": {
+        "summary": "Получение списка исполнителей",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/user_node_description"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/response_auth_error"
+          }
+        },
+        "operationId": "get-user-nodes-list",
+        "description": "Запрос списка свободных исполнителей. Возвращает список исполнителей, доступных для постановки на них задачи.",
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
+    },
+    "/user/tasks/add": {
+      "post": {
+        "summary": "Добавление новой задачи",
+        "operationId": "post-user-tasks-add",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/task_description"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/response_auth_error"
+          }
+        },
+        "description": "Добавление задачи на исполнитель с указанным идентификатором",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/new_task_description"
+              }
+            }
+          },
+          "description": "Описание создаваемой задачи:"
+        },
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
+    },
+    "/user/tasks/remove/{taskid}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/taskid"
+        }
+      ],
+      "delete": {
+        "summary": "Останов и удаление задачи",
+        "operationId": "delete-user-tasks-remove-taskid",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/response_ok"
+          }
+        },
+        "description": "Удаляет указанную задачу с исполнителя.",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
+    },
+    "/user/tasks/restart/{taskid}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/taskid"
+        }
+      ],
+      "post": {
+        "summary": "Перезапуск задачи",
+        "operationId": "post-user-tasks-restart-taskid",
+        "description": "Останавливает задачу и запускает ее снова на том же исполнителе.",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/response_ok"
+          }
+        },
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
+    },
+    "/user/tasks/list": {
+      "get": {
+        "summary": "Получение списка запущенных задач для пользователя",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/task_description"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-user-tasks-list",
+        "description": "Возвращает список задач, запущенных пользователем с данным api_key",
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
+    },
+    "/user/tasks/telemetry/{taskid}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/taskid"
+        }
+      ],
+      "post": {
+        "summary": "Получение данных телеметрии для запущенной задачи",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "operationId": "post-user-tasks-telemetry-taskid",
+        "description": "Возвращает данные по загрузке CPU, GPU, memory и т.д. для выбранного задания и временного диапазона в формате csv. Доступно только с ключом пользователя, поставившего задание.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/telemetry_request"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
+    },
+    "/user/tasks/logs/{taskid}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/taskid"
+        }
+      ],
+      "get": {
+        "summary": "Получение логов запущенной задачи",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/task_logs"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-user-tasks-log-taskid",
+        "description": "Возвращает логи, генерируемые пользовательским заданием, закодированные в base64.",
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
+    },
+    "/user/tasks/default": {
+      "get": {
+        "summary": "Операции с текущей задачей по-умолчанию",
+        "tags": [
+          "User"
+        ],
+        "operationId": "get-user-tasks-default",
+        "description": "Получить описание задачи, которая выполняется, когда оборудование простаивает. Доступно только для владельца оборудования.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/default_task_description"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "",
+        "operationId": "post-user-tasks-default",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/response_ok"
+          }
+        },
+        "description": "Заменяет задачу, которая выполняется, когда оборудование простаивает. Запущенные в данный момент задачи будут остановлены и заменены на новую. Доступно только для владельца оборудования.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/default_task_description"
+              }
+            }
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "api_response": {
+        "description": "Общий ответ API. Содержит код и текст ошибки.",
+        "type": "object",
+        "title": "",
+        "x-examples": {
+          "example-1": {
+            "code": 0,
+            "message": "ok"
+          }
+        },
+        "properties": {
+          "code": {
+            "type": "number"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "full_node_description": {
+        "description": "Полное описание исполнителя.",
+        "type": "object",
+        "properties": {
+          "cpus": {
+            "type": "array",
+            "description": "Список моделей CPU, установленных на исполнителе",
+            "items": {
+              "type": "object",
+              "description": ""
+            }
+          },
+          "gpus": {
+            "type": "array",
+            "description": "Список моделей GPU, установленных на исполнителе",
+            "items": {
+              "type": "object"
+            }
+          },
+          "hostname": {
+            "type": "string",
+            "minLength": 1,
+            "description": "hostname\n"
+          },
+          "hwid": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Уникальный идентификатор исполнителя"
+          },
+          "ip": {
+            "type": "string",
+            "minLength": 1,
+            "description": "IPv4 адрес"
+          },
+          "network": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Характеристики подключения к сети"
+          },
+          "ram": {
+            "type": "number",
+            "description": "Память исполнителя в Мб"
+          }
+        },
+        "required": [
+          "cpus",
+          "gpus",
+          "hostname",
+          "hwid",
+          "ip",
+          "network",
+          "ram"
+        ],
+        "x-examples": {
+          "example-1": {
+            "cpus": [
+              {}
+            ],
+            "gpus": [
+              {}
+            ],
+            "hostname": "string",
+            "hwid": "string",
+            "ip": "string",
+            "network": "string",
+            "ram": 0
+          }
+        }
+      },
+      "new_task_description": {
+        "title": "new_task_description",
+        "type": "object",
+        "x-examples": {
+          "example-1": {
+            "image": "string",
+            "params": "string",
+            "hwid": "string"
+          }
+        },
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Название образа в Megamind Docker Registry"
+          },
+          "params": {
+            "type": "string",
+            "description": "Параметры для передачи в образ, закодировано в base64"
+          },
+          "hwid": {
+            "type": "string",
+            "description": "Уникальный идентификатор оборудования"
+          }
+        },
+        "required": [
+          "image",
+          "params",
+          "hwid"
+        ]
+      },
+      "telemetry_request": {
+        "description": "",
+        "type": "object",
+        "properties": {
+          "timestamp_from": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Начало временного диапазона в формате ISO-8601 (https://tools.ietf.org/html/rfc3339#section-5.6)",
+            "format": "date-time"
+          },
+          "timestamp_to": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Окончание временного диапазона в формате ISO-8601 (https://tools.ietf.org/html/rfc3339#section-5.6)",
+            "format": "date-time"
+          },
+          "data_source": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Тип запрашиваемых данных",
+            "enum": [
+              "cpu",
+              "gpu",
+              "mem"
+            ]
+          }
+        },
+        "required": [
+          "timestamp_from",
+          "timestamp_to",
+          "data_source"
+        ]
+      },
+      "task_description": {
+        "title": "task_description",
+        "type": "object",
+        "description": "Описание запущенной задачи.",
+        "properties": {
+          "taskid": {
+            "type": "string",
+            "description": "Уникальный идентификатор задачи"
+          },
+          "hwid": {
+            "type": "string",
+            "description": "Уникальный идентификатор исполнителя"
+          },
+          "image": {
+            "type": "string",
+            "description": "Путь к образу в Megamind Docker Regsitry"
+          },
+          "params": {
+            "type": "string",
+            "description": "Параметры для передачи в образ docker, закодировано в base64"
+          },
+          "state": {
+            "type": "string",
+            "description": "Текущее состояние задачи: 1 - неизвестно, 2 - подготовка, 3 - запущена, 4 - остановлена, 5 - ошибка",
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ]
+          },
+          "error_msg": {
+            "type": "string"
+          },
+          "ip": {
+            "type": "string",
+            "description": "IPv4-адрес задачи"
+          }
+        },
+        "required": [
+          "taskid",
+          "hwid",
+          "image",
+          "params",
+          "state",
+          "error_msg",
+          "ip"
+        ]
+      },
+      "user_node_description": {
+        "description": "Полное описание исполнителя для пользователя",
+        "type": "object",
+        "x-examples": {
+          "example-1": {
+            "cpus": [
+              {}
+            ],
+            "gpus": [
+              {}
+            ],
+            "hostname": "string",
+            "hwid": "string",
+            "ip": "string",
+            "network": "string",
+            "ram": 0
+          }
+        },
+        "properties": {
+          "cpus": {
+            "type": "array",
+            "description": "Список моделей CPU, установленных на исполнителе",
+            "items": {
+              "type": "object",
+              "description": ""
+            }
+          },
+          "gpus": {
+            "type": "array",
+            "description": "Список моделей GPU, установленных на исполнителе",
+            "items": {
+              "type": "object"
+            }
+          },
+          "hwid": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Уникальный идентификатор исполнителя"
+          },
+          "network": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Характеристики подключения к сети"
+          },
+          "ram": {
+            "type": "number",
+            "description": "Память исполнителя в Мб"
+          }
+        },
+        "required": [
+          "cpus",
+          "gpus",
+          "hwid",
+          "network",
+          "ram"
+        ]
+      },
+      "owner_node_description": {
+        "title": "owner_node_description",
+        "type": "object",
+        "properties": {
+          "descr": {
+            "$ref": "#/components/schemas/full_node_description"
+          },
+          "task_type": {
+            "type": "number",
+            "description": "Тип задачи, исполняемой в данный момент на исполнителе: 0 - нет задачи, 1 - задача по умолчанию, 2 - пользовательская задача",
+            "enum": [
+              0,
+              1,
+              2
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "down"
+            ],
+            "description": "Состояние подключения оборудования"
+          }
+        },
+        "required": [
+          "descr",
+          "task_type",
+          "state"
+        ],
+        "description": "Описание оборудования для владельца"
+      },
+      "task_logs": {
+        "title": "task_logs",
+        "type": "object",
+        "properties": {
+          "taskid": {
+            "type": "string",
+            "description": "Уникальный идентификатор задачи"
+          },
+          "logs_b64": {
+            "type": "string",
+            "description": "Логи, закодированные в base64"
+          }
+        },
+        "required": [
+          "taskid",
+          "logs_b64"
+        ]
+      },
+      "default_task_description": {
+        "title": "default_task_description",
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Название образа в Megamind Docker Registry"
+          },
+          "params": {
+            "type": "string",
+            "description": "Параметры для передачи в образ, закодировано в base64"
+          }
+        },
+        "required": [
+          "image",
+          "params"
+        ]
+      }
+    },
+    "responses": {
+      "response_ok": {
+        "description": "Общий ответ API.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/api_response"
+            },
+            "examples": {
+              "example-1": {
+                "value": {
+                  "code": 0,
+                  "message": "ok"
+                }
+              }
+            }
+          }
+        }
+      },
+      "response_auth_error": {
+        "description": "Ошибка авторизации. Предоставлен неверный api_key, логин или пароль.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/api_response"
+            },
+            "examples": {
+              "example-1": {
+                "value": {
+                  "code": 2,
+                  "message": "auth exception: unauthorized action"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Авторизация с помощью заголовка": {
+        "name": "api-key",
+        "type": "apiKey",
+        "in": "header",
+        "description": "api-key это секрет, авторизующий пользователя на Megamind Platform. Получить его можно из /v1/auth."
+      },
+      "Basic HTTP Auth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": ""
+      }
+    },
+    "parameters": {
+      "hwid": {
+        "name": "hwid",
+        "in": "path",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Идентификатор исполнителя. Можно получить в /v1/node/list",
+        "required": true
+      },
+      "taskid": {
+        "name": "taskid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Уникальный идентификатор задачи"
+      },
+      "userid": {
+        "name": "userid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Уникальный идентификатор пользователя"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "General"
+    },
+    {
+      "name": "Nodes"
+    },
+    {
+      "name": "User"
+    }
+  ],
+  "security": [
+    {
+      "Авторизация с помощью заголовка": []
+    },
+    {
+      "Basic HTTP Auth": []
+    }
+  ]
+}
