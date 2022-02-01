@@ -171,7 +171,7 @@
       }
     },
     "/node/telemetry/{hwid}": {
-      "get": {
+      "post": {
         "summary": "Получение информации о загрузке оборудования",
         "tags": [
           "Nodes"
@@ -197,7 +197,7 @@
             }
           }
         },
-        "operationId": "get-node-telemetry",
+        "operationId": "post-node-telemetry",
         "description": "Возвращает данные по загрузке CPU, GPU, memory и т.д. для выбранного исполнителя и временного диапазона в формате csv. Доступно только с ключом владельца исполнителя.",
         "requestBody": {
           "content": {
@@ -502,6 +502,84 @@
           "User"
         ]
       }
+    },
+    "/apps/list": {
+      "get": {
+        "summary": "Получение списка приложений",
+        "tags": [
+          "Apps"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/app_description"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-apps-list",
+        "description": "Получение списка приложений"
+      }
+    },
+    "/apps/get/{app_id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/app_id"
+        }
+      ],
+      "get": {
+        "summary": "Получение описания приложения по его app_id",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app_description"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-apps-get-app_id",
+        "description": "Получение описания приложения по его app_id",
+        "tags": [
+          "Apps"
+        ]
+      }
+    },
+    "/user/tasks/addapptask": {
+      "post": {
+        "summary": "Добавление новой задачи-приложения",
+        "tags": [
+          "Apps",
+          "User"
+        ],
+        "operationId": "post-user-tasks-addapptask",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/new_apptask_description"
+              }
+            }
+          },
+          "description": ""
+        },
+        "description": "Добавление новой задачи-приложения. Юзер получает список доступных приложений через /apps/list, из него берет app_id и список доступных параметров, заполняет необходимые параметры и формирует объект params. Опции монтирования пока не используются, но должны быть заполнены хотя бы пустыми строками."
+      }
     }
   },
   "components": {
@@ -615,7 +693,7 @@
             "description": "Название образа в Megamind Docker Registry"
           },
           "params": {
-            "type": "string",
+            "type": "object",
             "description": "Параметры для передачи в образ, закодировано в base64"
           },
           "hwid": {
@@ -836,6 +914,57 @@
           "image",
           "params"
         ]
+      },
+      "app_description": {
+        "title": "app_description",
+        "type": "object",
+        "properties": {
+          "app_id": {
+            "type": "string"
+          },
+          "docker_image": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object"
+          }
+        },
+        "description": "Описание приложения. params - объект json, описывающий список применимых/ожидаемых в приложении параметров."
+      },
+      "fs_options_description": {
+        "title": "fs_options_description",
+        "type": "object",
+        "description": "Описание опций для монтирования внешних ФС к контейнеру",
+        "properties": {
+          "fs_type": {
+            "type": "string"
+          },
+          "in_path": {
+            "type": "string"
+          },
+          "out_path": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "new_apptask_description": {
+        "title": "new_apptask_description",
+        "type": "object",
+        "properties": {
+          "app_id": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object"
+          },
+          "": {
+            "$ref": "#/components/schemas/fs_options_description"
+          }
+        },
+        "description": "Модель для описания новой задачи-приложения. params - объект json, содержащий параметры из app_description.params и заполненные юзером значения."
       }
     },
     "responses": {
@@ -908,14 +1037,14 @@
         },
         "description": "Уникальный идентификатор задачи"
       },
-      "userid": {
-        "name": "userid",
+      "app_id": {
+        "name": "app_id",
         "in": "path",
         "required": true,
         "schema": {
           "type": "string"
         },
-        "description": "Уникальный идентификатор пользователя"
+        "description": "Идентификатор приложения"
       }
     }
   },
@@ -927,7 +1056,13 @@
       "name": "Nodes"
     },
     {
+      "name": "Private"
+    },
+    {
       "name": "User"
+    },
+    {
+      "name": "Apps"
     }
   ],
   "security": [
