@@ -1,12 +1,12 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Megamind API",
+    "title": "Decentramind.io API",
     "version": "1.0",
     "contact": {
-      "email": "mm@megamind.network"
+      "email": "info@decentramind.io"
     },
-    "description": "Megamind API для взаимодействия с Megamind Platform"
+    "description": "Decentramind.io API для взаимодействия с Decentramind.io Platform"
   },
   "servers": [
     {
@@ -18,7 +18,7 @@
       "get": {
         "summary": "Получение api_key",
         "operationId": "get-auth",
-        "description": "Вызов служит для авторизации на платформе Megamind и получения токена авторизации api_key для всех последующих вызовов",
+        "description": "Вызов служит для авторизации на платформе Decentramind.io и получения токена авторизации api_key для всех последующих вызовов",
         "parameters": [],
         "responses": {
           "200": {
@@ -77,7 +77,7 @@
             "$ref": "#/components/responses/response_auth_error"
           }
         },
-        "description": "Полностью удаляет исполнителя из системы Megamind и снимает все задачи, связанные с ним.",
+        "description": "Полностью удаляет исполнителя из системы Decentramind.io и снимает все задачи, связанные с ним.",
         "tags": [
           "Nodes"
         ],
@@ -142,7 +142,7 @@
     },
     "/node/list": {
       "get": {
-        "summary": "Получение списка исполнителей",
+        "summary": "Получение списка исполнителей, которыми владеет данный пользователь",
         "tags": [
           "Nodes"
         ],
@@ -232,7 +232,7 @@
     },
     "/user/nodes/list": {
       "get": {
-        "summary": "Получение списка исполнителей",
+        "summary": "Получение списка исполнителей, свободных в данный момент",
         "tags": [
           "User"
         ],
@@ -260,6 +260,41 @@
           {
             "Авторизация с помощью заголовка": []
           }
+        ]
+      },
+      "post": {
+        "summary": "Получение списка исполнителей, свободных в данный момент, с фильтрацией",
+        "operationId": "post-user-nodes-list",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user_node_description"
+                }
+              }
+            }
+          }
+        },
+        "description": "Запрос списка свободных исполнителей с фильтрацией. Возвращает список исполнителей, доступных для постановки на них задачи.",
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/filter_data"
+              }
+            }
+          },
+          "description": "Все поля опциональны"
+        },
+        "tags": [
+          "User"
         ]
       }
     },
@@ -580,6 +615,189 @@
         },
         "description": "Добавление новой задачи-приложения. Юзер получает список доступных приложений через /apps/list, из него берет app_id и список доступных параметров, заполняет необходимые параметры и формирует объект params. Опции монтирования пока не используются, но должны быть заполнены хотя бы пустыми строками."
       }
+    },
+    "/user/tasks/billing/{taskid}": {
+      "parameters": [
+        {
+          "name": "taskid",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Уникальный идентификатор задачи"
+        }
+      ],
+      "get": {
+        "summary": "Получение стоимости задачи",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/billing_resp"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-v1-user-tasks-billing-task_id",
+        "description": "Для продолжающейся задачи - текущая стоимость. Для уже оконченой - полная стоимость.",
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
+    },
+    "/node/billing/{hwid}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/hwid"
+        }
+      ],
+      "post": {
+        "summary": "Получение биллинга по ноде",
+        "operationId": "post-node-billing-hwid",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/billing_resp"
+                }
+              }
+            }
+          }
+        },
+        "description": "Возвращает для указанной ноды за указанный период истраченное электричество и заработанные токены",
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/time_range"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Nodes"
+        ]
+      }
+    },
+    "/user/tasks/history": {
+      "post": {
+        "summary": "Получение списка задач для указанного пользователя",
+        "operationId": "post-user-tasks-history",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/task_description"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "По api_key определяется пользователь и по нему возвращаются все задания, которые налались или закончились в заданный промежуток времени",
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/time_range"
+              }
+            }
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/balance/{userid}": {
+      "parameters": [
+        {
+          "name": "userid",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Уникальный идентификатор пользователя"
+        }
+      ],
+      "get": {
+        "summary": "Баланс пользователя",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user_balance_resp"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-user-balance-user_id",
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ],
+        "description": "Получение баланса в токенах"
+      }
+    },
+    "/node/filter_data": {
+      "get": {
+        "summary": "Получение данных для фильтрации при выборе доступных исполнителей",
+        "tags": [
+          "Nodes"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/filter_data"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-node-filter_data",
+        "description": "Получение граничных условий для фильтра при поиске доступных исполнителей. Все поля объекта будут заполнены.",
+        "security": [
+          {
+            "Авторизация с помощью заголовка": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -690,7 +908,7 @@
         "properties": {
           "image": {
             "type": "string",
-            "description": "Название образа в Megamind Docker Registry"
+            "description": "Название образа в Decentramind.io Docker Registry"
           },
           "params": {
             "type": "object",
@@ -755,7 +973,7 @@
           },
           "image": {
             "type": "string",
-            "description": "Путь к образу в Megamind Docker Regsitry"
+            "description": "Путь к образу в Decentramind.io Docker Regsitry"
           },
           "params": {
             "type": "string",
@@ -903,7 +1121,7 @@
         "properties": {
           "image": {
             "type": "string",
-            "description": "Название образа в Megamind Docker Registry"
+            "description": "Название образа в Decentramind.io Docker Registry"
           },
           "params": {
             "type": "string",
@@ -965,6 +1183,99 @@
           }
         },
         "description": "Модель для описания новой задачи-приложения. params - объект json, содержащий параметры из app_description.params и заполненные юзером значения."
+      },
+      "billing_resp": {
+        "title": "billing_resp",
+        "type": "object",
+        "description": "Описывает стоимость в монетках и Вт",
+        "properties": {
+          "power_draw_w": {
+            "type": "number",
+            "description": "Энергопотребление, Вт"
+          },
+          "tokens": {
+            "type": "number",
+            "description": "Затраты или прибыль в токенах"
+          }
+        },
+        "required": [
+          "power_draw_w",
+          "tokens"
+        ]
+      },
+      "time_range": {
+        "title": "time_range",
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "description": ""
+      },
+      "filter_data": {
+        "title": "filter_data",
+        "type": "object",
+        "x-examples": {},
+        "description": "Источник данных для фильтра при поиске свободной ноды",
+        "properties": {
+          "ram_size_min": {
+            "type": "integer",
+            "description": "Минимум размера ОЗУ"
+          },
+          "ram_size_max": {
+            "type": "integer",
+            "description": "Максимум размера ОЗУ"
+          },
+          "hashrate_min": {
+            "type": "integer",
+            "description": "Минимум хэшрейта"
+          },
+          "hashrate_max": {
+            "type": "integer",
+            "description": "Максимум хэшрейта"
+          },
+          "gpu_count_min": {
+            "type": "integer",
+            "description": "Минимум кол-ва GPU"
+          },
+          "gpu_count_max": {
+            "type": "integer",
+            "description": "Максимум кол-ва GPU"
+          },
+          "gpus_dict": {
+            "type": "array",
+            "description": "Список моделей GPU",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cpus_dict": {
+            "type": "array",
+            "description": "Список моделей CPU",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "user_balance_resp": {
+        "title": "user_balance_resp",
+        "type": "object",
+        "description": "",
+        "properties": {
+          "balance": {
+            "type": "number",
+            "description": "Баланс токенов, доступных для постановки задачи"
+          },
+          "withdrawable_balance": {
+            "type": "number",
+            "description": "Баланс токенов, доступных для вывода из системы"
+          }
+        }
       }
     },
     "responses": {
@@ -1010,7 +1321,7 @@
         "name": "api-key",
         "type": "apiKey",
         "in": "header",
-        "description": "api-key это секрет, авторизующий пользователя на Megamind Platform. Получить его можно из /v1/auth."
+        "description": "api-key это секрет, авторизующий пользователя на Decentramind.io. Получить его можно из /v1/auth."
       },
       "Basic HTTP Auth": {
         "type": "http",
